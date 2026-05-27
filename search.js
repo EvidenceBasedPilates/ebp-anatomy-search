@@ -15,7 +15,7 @@
   'use strict';
 
   /* ---------- CONFIG ---------- */
-  var SHEET_CSV_URL = 'REPLACE_WITH_YOUR_PUBLISHED_CSV_URL';
+  var SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT-HVy1QvBwlq9p9FEuGwVsV-EKe5QA5cm4u38YRAAfUk826JfdYT20nm_Y2VQmQllUv1odBXNIccA8/pub?gid=0&single=true&output=csv';
   var CACHE_MINUTES = 10;             // how long to keep lessons in browser memory
   var SCRIPT_VERSION = '4.0.0';
 
