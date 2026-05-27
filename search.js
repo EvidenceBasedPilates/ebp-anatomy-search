@@ -1,14 +1,14 @@
 /* ============================================================
- * Evidence-Based Pilates · Member Area Search · v4 (Sheet-backed)
+ * Evidence-Based Pilates · Member Area Search · v4.2 (Brand)
  * ============================================================
+ * Changes from v4.1:
+ *   - Trigger pill says "Search" (one word) instead of "Search lessons"
+ *
  * Hosted on GitHub Pages. Loaded into ClickFunnels via a single
  * <script src="..."></script> tag in the member funnel's footer.
  *
  * Data lives in a published Google Sheet (CSV). To update the
  * search index, edit the sheet. No code changes required.
- *
- * CONFIG: set SHEET_CSV_URL below to your published-to-web
- * Google Sheet CSV URL. Instructions in README.
  * ============================================================ */
 
 (function () {
@@ -16,8 +16,8 @@
 
   /* ---------- CONFIG ---------- */
   var SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT-HVy1QvBwlq9p9FEuGwVsV-EKe5QA5cm4u38YRAAfUk826JfdYT20nm_Y2VQmQllUv1odBXNIccA8/pub?gid=0&single=true&output=csv';
-  var CACHE_MINUTES = 10;             // how long to keep lessons in browser memory
-  var SCRIPT_VERSION = '4.0.0';
+  var CACHE_MINUTES = 10;
+  var SCRIPT_VERSION = '4.2.0';
 
   console.log('[EBP-Search] v' + SCRIPT_VERSION + ' script loaded');
 
@@ -26,20 +26,21 @@
   styleEl.setAttribute('data-ebp-search', 'true');
   styleEl.textContent = [
     "@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap');",
-    "#ebp-search-root{--ebp-bg:#FAF8F3;--ebp-card:#FFFFFF;--ebp-text:#1C1B17;--ebp-text-muted:#6B6862;--ebp-text-subtle:#A8A49C;--ebp-border:#EAE5DA;--ebp-border-soft:#F2EEE5;--ebp-accent:#2D5F4D;--ebp-accent-hover:#1E4738;--ebp-accent-soft:#E8F0EC;--ebp-shadow:0 20px 60px rgba(28,27,23,0.14),0 4px 12px rgba(28,27,23,0.05);--ebp-shadow-btn:0 10px 28px rgba(45,95,77,0.35),0 2px 6px rgba(45,95,77,0.18);--ebp-radius:14px;--ebp-font-display:'Fraunces',Georgia,'Times New Roman',serif;--ebp-font-body:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,sans-serif}",
+    "#ebp-search-root{--ebp-bg:#F7F9FF;--ebp-card:#FFFFFF;--ebp-text:#0C1A33;--ebp-text-muted:#5A6478;--ebp-text-subtle:#9AA3B7;--ebp-border:#E1E6F2;--ebp-border-soft:#EEF2FB;--ebp-accent:#095FFF;--ebp-accent-hover:#0750D8;--ebp-accent-soft:#E6EEFF;--ebp-shadow:0 20px 60px rgba(9,95,255,0.14),0 4px 12px rgba(12,26,51,0.06);--ebp-shadow-btn:0 10px 28px rgba(9,95,255,0.40),0 2px 6px rgba(9,95,255,0.22);--ebp-radius:14px;--ebp-font-display:'Fraunces',Georgia,'Times New Roman',serif;--ebp-font-body:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,sans-serif}",
     "#ebp-search-root,#ebp-search-root *,#ebp-search-root *::before,#ebp-search-root *::after{box-sizing:border-box}",
-    "#ebp-search-trigger{position:fixed;bottom:24px;left:24px;z-index:2147483646;width:56px;height:56px;border-radius:50%;background:var(--ebp-accent);color:white;border:none;cursor:pointer;box-shadow:var(--ebp-shadow-btn);display:flex;align-items:center;justify-content:center;transition:transform 0.18s cubic-bezier(.2,.8,.2,1),background 0.18s ease;font-family:var(--ebp-font-body);padding:0}",
-    "#ebp-search-trigger:hover{transform:translateY(-2px) scale(1.04);background:var(--ebp-accent-hover)}",
-    "#ebp-search-trigger:active{transform:translateY(0) scale(1)}",
-    "#ebp-search-trigger svg{width:22px;height:22px;pointer-events:none}",
-    "#ebp-search-backdrop{position:fixed;inset:0;background:rgba(28,27,23,0.42);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:2147483646;opacity:0;transition:opacity 0.22s ease;pointer-events:none}",
+    "#ebp-search-trigger{position:fixed;bottom:24px;left:24px;z-index:2147483646;display:inline-flex;align-items:center;gap:10px;height:48px;padding:0 22px 0 18px;border-radius:999px;background:var(--ebp-accent);color:white;border:none;cursor:pointer;box-shadow:var(--ebp-shadow-btn);font-family:var(--ebp-font-body);font-size:14px;font-weight:600;letter-spacing:0.02em;transition:transform 0.18s cubic-bezier(.2,.8,.2,1),background 0.18s ease,box-shadow 0.18s ease}",
+    "#ebp-search-trigger:hover{transform:translateY(-2px);background:var(--ebp-accent-hover);box-shadow:0 14px 32px rgba(9,95,255,0.48),0 3px 8px rgba(9,95,255,0.26)}",
+    "#ebp-search-trigger:active{transform:translateY(0)}",
+    "#ebp-search-trigger svg{width:18px;height:18px;pointer-events:none;flex-shrink:0}",
+    "#ebp-search-trigger-text{pointer-events:none;white-space:nowrap}",
+    "#ebp-search-backdrop{position:fixed;inset:0;background:rgba(12,26,51,0.45);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:2147483646;opacity:0;transition:opacity 0.22s ease;pointer-events:none}",
     "#ebp-search-backdrop[data-open='true']{opacity:1;pointer-events:auto}",
     "#ebp-search-modal{position:fixed;top:72px;left:50%;transform:translateX(-50%) translateY(-12px);width:calc(100% - 32px);max-width:680px;max-height:calc(100vh - 120px);background:var(--ebp-card);border-radius:var(--ebp-radius);box-shadow:var(--ebp-shadow);z-index:2147483647;opacity:0;pointer-events:none;transition:opacity 0.22s ease,transform 0.22s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column;overflow:hidden;font-family:var(--ebp-font-body)}",
     "#ebp-search-modal[data-open='true']{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0)}",
     "#ebp-search-header{padding:22px 24px 18px;border-bottom:1px solid var(--ebp-border-soft)}",
     "#ebp-search-heading{font-family:var(--ebp-font-display);font-size:13px;font-weight:500;color:var(--ebp-text-muted);text-transform:uppercase;letter-spacing:0.14em;margin:0 0 14px}",
     "#ebp-search-input-wrapper{display:flex;align-items:center;gap:12px}",
-    "#ebp-search-input-wrapper > svg{width:20px;height:20px;color:var(--ebp-text-muted);flex-shrink:0}",
+    "#ebp-search-input-wrapper > svg{width:20px;height:20px;color:var(--ebp-accent);flex-shrink:0}",
     "#ebp-search-input{flex:1;border:none;outline:none;font-size:18px;color:var(--ebp-text);font-family:var(--ebp-font-body);background:transparent;padding:4px 0;letter-spacing:-0.01em}",
     "#ebp-search-input::placeholder{color:var(--ebp-text-subtle)}",
     "#ebp-search-esc{background:var(--ebp-bg);border:1px solid var(--ebp-border);border-radius:5px;padding:3px 8px;font-size:11px;color:var(--ebp-text-muted);font-family:var(--ebp-font-body)}",
@@ -63,7 +64,7 @@
     ".ebp-loading{padding:56px 24px;text-align:center;color:var(--ebp-text-muted);font-size:14px}",
     "#ebp-search-footer{padding:11px 24px;border-top:1px solid var(--ebp-border-soft);background:var(--ebp-bg);font-size:11px;color:var(--ebp-text-muted);display:flex;justify-content:space-between;align-items:center}",
     "#ebp-search-brand{font-family:var(--ebp-font-display);font-style:italic;color:var(--ebp-text-muted);font-size:12px}",
-    "@media (max-width:640px){#ebp-search-modal{top:12px;max-height:calc(100vh - 24px);width:calc(100% - 20px);border-radius:12px}#ebp-search-trigger{width:50px;height:50px;bottom:18px;left:18px}#ebp-search-header{padding:18px 18px 14px}#ebp-search-categories{padding:12px 18px}.ebp-result{padding:14px 18px}#ebp-search-footer{padding:10px 18px;font-size:10.5px}#ebp-search-footer-left{display:none}}"
+    "@media (max-width:640px){#ebp-search-modal{top:12px;max-height:calc(100vh - 24px);width:calc(100% - 20px);border-radius:12px}#ebp-search-trigger{bottom:18px;left:18px;height:44px;padding:0 18px 0 16px;font-size:13px}#ebp-search-trigger svg{width:16px;height:16px}#ebp-search-header{padding:18px 18px 14px}#ebp-search-categories{padding:12px 18px}.ebp-result{padding:14px 18px}#ebp-search-footer{padding:10px 18px;font-size:10.5px}#ebp-search-footer-left{display:none}}"
   ].join('');
   document.head.appendChild(styleEl);
 
@@ -73,7 +74,8 @@
     root.id = 'ebp-search-root';
     root.innerHTML = [
       '<button id="ebp-search-trigger" type="button" aria-label="Open lesson search">',
-      '  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="20" y1="20" x2="16.65" y2="16.65"></line></svg>',
+      '  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="20" y1="20" x2="16.65" y2="16.65"></line></svg>',
+      '  <span id="ebp-search-trigger-text">Search</span>',
       '</button>',
       '<div id="ebp-search-backdrop"></div>',
       '<div id="ebp-search-modal" role="dialog" aria-label="Search lessons" aria-modal="true">',
@@ -108,32 +110,18 @@
       var c = text.charAt(i);
       if (inQuotes) {
         if (c === '"') {
-          if (text.charAt(i + 1) === '"') {
-            field += '"';
-            i += 2;
-            continue;
-          }
-          inQuotes = false;
-          i++;
-          continue;
+          if (text.charAt(i + 1) === '"') { field += '"'; i += 2; continue; }
+          inQuotes = false; i++; continue;
         }
-        field += c;
-        i++;
-        continue;
+        field += c; i++; continue;
       }
       if (c === '"') { inQuotes = true; i++; continue; }
       if (c === ',') { row.push(field); field = ''; i++; continue; }
       if (c === '\n' || c === '\r') {
         if (c === '\r' && text.charAt(i + 1) === '\n') i++;
-        row.push(field);
-        rows.push(row);
-        row = [];
-        field = '';
-        i++;
-        continue;
+        row.push(field); rows.push(row); row = []; field = ''; i++; continue;
       }
-      field += c;
-      i++;
+      field += c; i++;
     }
     if (field.length || row.length) { row.push(field); rows.push(row); }
     return rows;
@@ -177,12 +165,10 @@
   function fetchLessons(callback) {
     var now = Date.now();
     if (lessonsCache && (now - cacheTime) < CACHE_MINUTES * 60000) {
-      callback(null, lessonsCache);
-      return;
+      callback(null, lessonsCache); return;
     }
     if (SHEET_CSV_URL === 'REPLACE_WITH_YOUR_PUBLISHED_CSV_URL') {
-      callback(new Error('SHEET_CSV_URL not configured. Edit search.js.'), null);
-      return;
+      callback(new Error('SHEET_CSV_URL not configured. Edit search.js.'), null); return;
     }
     var url = SHEET_CSV_URL + (SHEET_CSV_URL.indexOf('?') >= 0 ? '&' : '?') + 'cb=' + now;
     var xhr = new XMLHttpRequest();
@@ -192,13 +178,10 @@
       if (xhr.status >= 200 && xhr.status < 300) {
         try {
           var lessons = rowsToLessons(parseCSV(xhr.responseText));
-          lessonsCache = lessons;
-          cacheTime = Date.now();
+          lessonsCache = lessons; cacheTime = Date.now();
           console.log('[EBP-Search] Loaded ' + lessons.length + ' lessons');
           callback(null, lessons);
-        } catch (e) {
-          callback(e, null);
-        }
+        } catch (e) { callback(e, null); }
       } else {
         callback(new Error('Failed to fetch lessons: HTTP ' + xhr.status), null);
       }
@@ -517,7 +500,6 @@
       }
     });
 
-    // Preload lessons on init so first open is instant
     loadAndRender();
     console.log('[EBP-Search] ready');
   }
