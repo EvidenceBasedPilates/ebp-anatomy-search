@@ -26,10 +26,10 @@
   styleEl.setAttribute('data-ebp-search', 'true');
   styleEl.textContent = [
     "@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap');",
-    "#ebp-search-root{--ebp-bg:#F7F9FF;--ebp-card:#FFFFFF;--ebp-text:#0C1A33;--ebp-text-muted:#5A6478;--ebp-text-subtle:#9AA3B7;--ebp-border:#E1E6F2;--ebp-border-soft:#EEF2FB;--ebp-accent:#095FFF;--ebp-accent-hover:#0750D8;--ebp-accent-soft:#E6EEFF;--ebp-shadow:0 20px 60px rgba(9,95,255,0.14),0 4px 12px rgba(12,26,51,0.06);--ebp-shadow-btn:0 10px 28px rgba(9,95,255,0.40),0 2px 6px rgba(9,95,255,0.22);--ebp-radius:14px;--ebp-font-display:'Fraunces',Georgia,'Times New Roman',serif;--ebp-font-body:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,sans-serif}",
+    "#ebp-search-root{--ebp-bg:#F7F9FF;--ebp-card:#FFFFFF;--ebp-text:#0C1A33;--ebp-text-muted:#5A6478;--ebp-text-subtle:#9AA3B7;--ebp-border:#E1E6F2;--ebp-border-soft:#EEF2FB;--ebp-accent:#000000;--ebp-accent-hover:#1A1A1A;--ebp-accent-soft:#F0F0F0;--ebp-shadow:0 20px 60px rgba(0,0,0,0.18),0 4px 12px rgba(12,26,51,0.06);--ebp-shadow-btn:0 10px 28px rgba(0,0,0,0.35),0 2px 6px rgba(0,0,0,0.20);--ebp-radius:14px;--ebp-font-display:'Fraunces',Georgia,'Times New Roman',serif;--ebp-font-body:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,sans-serif}",
     "#ebp-search-root,#ebp-search-root *,#ebp-search-root *::before,#ebp-search-root *::after{box-sizing:border-box}",
     "#ebp-search-trigger{position:fixed;bottom:24px;left:24px;z-index:2147483646;display:inline-flex;align-items:center;gap:10px;height:48px;padding:0 22px 0 18px;border-radius:999px;background:var(--ebp-accent);color:white;border:none;cursor:pointer;box-shadow:var(--ebp-shadow-btn);font-family:var(--ebp-font-body);font-size:14px;font-weight:600;letter-spacing:0.02em;transition:transform 0.18s cubic-bezier(.2,.8,.2,1),background 0.18s ease,box-shadow 0.18s ease}",
-    "#ebp-search-trigger:hover{transform:translateY(-2px);background:var(--ebp-accent-hover);box-shadow:0 14px 32px rgba(9,95,255,0.48),0 3px 8px rgba(9,95,255,0.26)}",
+    "#ebp-search-trigger:hover{transform:translateY(-2px);background:var(--ebp-accent-hover);box-shadow:0 14px 32px rgba(0,0,0,0.40),0 3px 8px rgba(0,0,0.24)}",
     "#ebp-search-trigger:active{transform:translateY(0)}",
     "#ebp-search-trigger svg{width:18px;height:18px;pointer-events:none;flex-shrink:0}",
     "#ebp-search-trigger-text{pointer-events:none;white-space:nowrap}",
