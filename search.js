@@ -1,39 +1,57 @@
 /* ============================================================
- * Evidence-Based Pilates · Member Area Search · v4.2 (Brand)
+ * Evidence-Based Pilates Ā· Member Area Search Ā· v4.4
  * ============================================================
- * Changes from v4.1:
- *   - Trigger pill says "Search" (one word) instead of "Search lessons"
+ * Changes from v4.3 (black):
+ *   - Sheet URL is now configurable per-funnel via
+ *     window.EBP_SEARCH_CONFIG.sheetUrl
+ *   - Backward compatible: if no config is set, falls back to
+ *     the DEFAULT_SHEET_CSV_URL below.
  *
- * Hosted on GitHub Pages. Loaded into ClickFunnels via a single
- * <script src="..."></script> tag in the member funnel's footer.
+ * HOW MULTIPLE PRODUCTS WORK:
+ *   Each ClickFunnels funnel sets its own sheet URL before
+ *   loading this script. Example footer code per funnel:
  *
- * Data lives in a published Google Sheet (CSV). To update the
- * search index, edit the sheet. No code changes required.
- * ============================================================ */
+ *     <script>window.EBP_SEARCH_CONFIG = {
+ *       sheetUrl: 'https://docs.google.com/.../pub?output=csv'
+ *     };</script>
+ *     <script src="https://EvidenceBasedPilates.github.io/ebp-anatomy-search/search.js" defer></script>
+ *
+ *   The A&B Club funnel uses the A&B sheet URL.
+ *   The Pilates Club funnel uses the Pilates sheet URL.
+ *   Each lead-gen course funnel uses its own sheet URL.
+ *
+ * Hosted on GitHub Pages. Same single search.js powers every
+ * product's search bar. ============================================================ */
 
 (function () {
   'use strict';
 
   /* ---------- CONFIG ---------- */
-  var SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT-HVy1QvBwlq9p9FEuGwVsV-EKe5QA5cm4u38YRAAfUk826JfdYT20nm_Y2VQmQllUv1odBXNIccA8/pub?gid=0&single=true&output=csv';
-  var CACHE_MINUTES = 10;
-  var SCRIPT_VERSION = '4.2.0';
+  // Fallback URL used when a funnel doesn't set window.EBP_SEARCH_CONFIG.
+  // Currently points at the original A&B Club sheet for backward compatibility.
+  var DEFAULT_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT-HVy1QvBwlq9p9FEuGwVsV-EKe5QA5cm4u38YRAAfUk826JfdYT20nm_Y2VQmQllUv1odBXNIccA8/pub?gid=0&single=true&output=csv';
 
-  console.log('[EBP-Search] v' + SCRIPT_VERSION + ' script loaded');
+  var userConfig = (typeof window !== 'undefined' && window.EBP_SEARCH_CONFIG) ? window.EBP_SEARCH_CONFIG : {};
+  var SHEET_CSV_URL = userConfig.sheetUrl || DEFAULT_SHEET_CSV_URL;
+
+  var CACHE_MINUTES = 10;
+  var SCRIPT_VERSION = '4.4.0';
+
+  console.log('[EBP-Search] v' + SCRIPT_VERSION + ' script loaded. Sheet URL source: ' + (userConfig.sheetUrl ? 'funnel config' : 'default fallback'));
 
   /* ---------- INJECT STYLES ---------- */
   var styleEl = document.createElement('style');
   styleEl.setAttribute('data-ebp-search', 'true');
   styleEl.textContent = [
     "@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap');",
-    "#ebp-search-root{--ebp-bg:#F7F9FF;--ebp-card:#FFFFFF;--ebp-text:#0C1A33;--ebp-text-muted:#5A6478;--ebp-text-subtle:#9AA3B7;--ebp-border:#E1E6F2;--ebp-border-soft:#EEF2FB;--ebp-accent:#000000;--ebp-accent-hover:#1A1A1A;--ebp-accent-soft:#F0F0F0;--ebp-shadow:0 20px 60px rgba(0,0,0,0.18),0 4px 12px rgba(12,26,51,0.06);--ebp-shadow-btn:0 10px 28px rgba(0,0,0,0.35),0 2px 6px rgba(0,0,0,0.20);--ebp-radius:14px;--ebp-font-display:'Fraunces',Georgia,'Times New Roman',serif;--ebp-font-body:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,sans-serif}",
+    "#ebp-search-root{--ebp-bg:#F7F7F7;--ebp-card:#FFFFFF;--ebp-text:#0C0C0C;--ebp-text-muted:#5A5A5A;--ebp-text-subtle:#9A9A9A;--ebp-border:#E5E5E5;--ebp-border-soft:#EFEFEF;--ebp-accent:#000000;--ebp-accent-hover:#1A1A1A;--ebp-accent-soft:#F0F0F0;--ebp-shadow:0 20px 60px rgba(0,0,0,0.18),0 4px 12px rgba(0,0,0,0.06);--ebp-shadow-btn:0 10px 28px rgba(0,0,0,0.35),0 2px 6px rgba(0,0,0,0.20);--ebp-radius:14px;--ebp-font-display:'Fraunces',Georgia,'Times New Roman',serif;--ebp-font-body:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',system-ui,sans-serif}",
     "#ebp-search-root,#ebp-search-root *,#ebp-search-root *::before,#ebp-search-root *::after{box-sizing:border-box}",
     "#ebp-search-trigger{position:fixed;bottom:24px;left:24px;z-index:2147483646;display:inline-flex;align-items:center;gap:10px;height:48px;padding:0 22px 0 18px;border-radius:999px;background:var(--ebp-accent);color:white;border:none;cursor:pointer;box-shadow:var(--ebp-shadow-btn);font-family:var(--ebp-font-body);font-size:14px;font-weight:600;letter-spacing:0.02em;transition:transform 0.18s cubic-bezier(.2,.8,.2,1),background 0.18s ease,box-shadow 0.18s ease}",
-    "#ebp-search-trigger:hover{transform:translateY(-2px);background:var(--ebp-accent-hover);box-shadow:0 14px 32px rgba(0,0,0,0.40),0 3px 8px rgba(0,0,0.24)}",
+    "#ebp-search-trigger:hover{transform:translateY(-2px);background:var(--ebp-accent-hover);box-shadow:0 14px 32px rgba(0,0,0,0.40),0 3px 8px rgba(0,0,0,0.24)}",
     "#ebp-search-trigger:active{transform:translateY(0)}",
     "#ebp-search-trigger svg{width:18px;height:18px;pointer-events:none;flex-shrink:0}",
     "#ebp-search-trigger-text{pointer-events:none;white-space:nowrap}",
-    "#ebp-search-backdrop{position:fixed;inset:0;background:rgba(12,26,51,0.45);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:2147483646;opacity:0;transition:opacity 0.22s ease;pointer-events:none}",
+    "#ebp-search-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.45);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:2147483646;opacity:0;transition:opacity 0.22s ease;pointer-events:none}",
     "#ebp-search-backdrop[data-open='true']{opacity:1;pointer-events:auto}",
     "#ebp-search-modal{position:fixed;top:72px;left:50%;transform:translateX(-50%) translateY(-12px);width:calc(100% - 32px);max-width:680px;max-height:calc(100vh - 120px);background:var(--ebp-card);border-radius:var(--ebp-radius);box-shadow:var(--ebp-shadow);z-index:2147483647;opacity:0;pointer-events:none;transition:opacity 0.22s ease,transform 0.22s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column;overflow:hidden;font-family:var(--ebp-font-body)}",
     "#ebp-search-modal[data-open='true']{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0)}",
@@ -168,7 +186,7 @@
       callback(null, lessonsCache); return;
     }
     if (SHEET_CSV_URL === 'REPLACE_WITH_YOUR_PUBLISHED_CSV_URL') {
-      callback(new Error('SHEET_CSV_URL not configured. Edit search.js.'), null); return;
+      callback(new Error('SHEET_CSV_URL not configured. Set window.EBP_SEARCH_CONFIG.sheetUrl in funnel footer.'), null); return;
     }
     var url = SHEET_CSV_URL + (SHEET_CSV_URL.indexOf('?') >= 0 ? '&' : '?') + 'cb=' + now;
     var xhr = new XMLHttpRequest();
